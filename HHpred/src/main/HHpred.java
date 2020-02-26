@@ -21,12 +21,14 @@ public class HHpred
 		
 		//COMENZAR EL PROCESO PSIPRED
 		
-		Thread psipred = new Thread(new Psipred(), "psipred");		
+		Thread psipred = new Thread(new Psipred(args[1]), "psipred");		
 		psipred.start();
 		
 		//Esperar a terminacion
 		
 		psiBlast.join();
 		psipred.join();
+		
+		System.out.println("TRABAJO: "+id+" STATUS: "+status);
 	}	
 }

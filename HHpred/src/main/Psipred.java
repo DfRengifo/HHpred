@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Psipred implements Runnable
 {
@@ -31,13 +33,15 @@ public class Psipred implements Runnable
     private static String id;
     private static String name; 
     private static String status;
+    private static String sequence;
     
     /**
      *  constructor default
      */
-    public Psipred() 
+    public Psipred(String sequence) 
 	{
 		status = STARTING;
+		this.sequence = sequence;
 	}
 
     /**
@@ -48,7 +52,7 @@ public class Psipred implements Runnable
 		System.out.println("STARTING PSIPRED");
 		try 
 		{
-			sendPOST();
+			sendPOST(sequence);
 		} 
 		catch (IOException e) 
 		{
@@ -114,7 +118,7 @@ public class Psipred implements Runnable
      *  envia un POST request al servidor psipred
      *  recibe y analiza validez de la respuesta
      */
-	private static void sendPOST() throws IOException 
+	private static void sendPOST(String sqnc) throws IOException 
 	{		
 		//declaracion id	
 		
@@ -131,12 +135,14 @@ public class Psipred implements Runnable
 		byte[] buffer;
 		int maxBufferSize = 1024*1024;
 		
-		//declaracion file y filepath
+		//declaracion file, filename y filepath
 		
-		String[] q ="data/prot.txt".split("/");
-		int idx = q.length - 1;			
+		String[] q ="data/Proteina.txt".split("/");
+		int idx = q.length - 1;		
 		
-		File file = new File("data/prot.txt");
+		Files.write(Paths.get("data/Proteina.txt"), sqnc.getBytes());
+		
+		File file = new File("data/Proteina.txt");
 		FileInputStream fileInputStream = new FileInputStream(file);
 		
 		//comenzar conexion
@@ -344,7 +350,7 @@ public class Psipred implements Runnable
 			//define file
 			
 			OutputStream os = null;
-			os = new FileOutputStream(new File("data/Secondary.txt"));
+			os = new FileOutputStream(new File("data/EstructuraSecundaria.txt"));
 			
 			//compile response
 

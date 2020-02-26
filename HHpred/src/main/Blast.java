@@ -16,7 +16,7 @@ public class Blast implements Runnable
 	private static final String URL = "https://blast.ncbi.nlm.nih.gov/Blast.cgi";	
 	private static final String PARAMETERS_INTER_GET = "?CMD=Get&RID=";		
 	private static final String PARAMETERS_GET = "?CMD=Get&RESULTS_FILE=on&FORMAT_TYPE=CSV&FORMAT_OBJECT=Alignment&DESCRIPTIONS=100&ALIGNMENT_VIEW=Tabular&RID=";
-    private static final String PARAMETERS_POST = "?CMD=Put&PROGRAM=blastp&DATABASE=nr&RUN_PSIBLAST=on&EXPECT=***&QUERY=";
+    private static final String PARAMETERS_POST = "?CMD=Put&PROGRAM=blastp&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome&DATABASE=nr&RUN_PSIBLAST=on&EXPECT=***&QUERY=";
     
     //declarar estados
 	
@@ -282,10 +282,9 @@ public class Blast implements Runnable
 			//SUCCESS
 			
 			OutputStream os = null;
-			os = new FileOutputStream(new File("data/Blast.csv"));
+			os = new FileOutputStream(new File("data/Psi-Blast.txt"));
 			
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String inputLine;
 			
 			//write file
