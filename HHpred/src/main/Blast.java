@@ -9,27 +9,55 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class Blast 
+public class Blast implements Runnable
 {
+	//declarar ULRS
+	
 	private static final String URL = "https://blast.ncbi.nlm.nih.gov/Blast.cgi";	
 	private static final String PARAMETERS_INTER_GET = "?CMD=Get&RID=";		
-	private static final String PARAMETERS_GET = "?RESULTS_FILE=on&FORMAT_TYPE=CSV&FORMAT_OBJECT=Alignment&DESCRIPTIONS=100&ALIGNMENT_VIEW=Tabular&CMD=Get&RID=";	
-    private static final String PARAMETERS_POST = "?CMD=Put&PROGRAM=blastp&PAGE_TYPE=BlastSearch&LINK_LOC=blasthome&DATABASE=nr&RUN_PSIBLAST=on&EXPECT=***&QUERY=";
+	private static final String PARAMETERS_GET = "?CMD=Get&RESULTS_FILE=on&FORMAT_TYPE=CSV&FORMAT_OBJECT=Alignment&DESCRIPTIONS=100&ALIGNMENT_VIEW=Tabular&RID=";
+    private static final String PARAMETERS_POST = "?CMD=Put&PROGRAM=blastp&DATABASE=nr&RUN_PSIBLAST=on&EXPECT=***&QUERY=";
     
     //declarar estados
 	
+    private static final String STARTING = "starting";
 	private static final String WAITING = "waiting";
 	private static final String FAILURE = "failure";
 	private static final String SUCCESS = "success";
 	private static final String RETRIEVING = "retrieving";
+	
+	//declarar variables
     
     private static String id;    
-    private static String status;
+    private static String status;    
+    private static String[] parameters;
+    
+    /**
+     *  constructor default
+     *
+     *  @arg String[] args => parametros para el blast
+     */
+	public Blast(String[] args) 
+	{
+		parameters = args; 
+		status = STARTING;
+	}
 
-	public static void main(String[] args) throws IOException, InterruptedException 
+	/**
+     *  run: ejecuta el proceso blast     
+     */
+	public void run() 
 	{	
-		System.out.println("Starting BLAST");
-		sendPOST(args[0], args[1]);	
+		System.out.println("STARTING BLAST");
+		
+		try 
+		{
+			sendPOST(parameters[0], parameters[1]);
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}	
 		
 		if (status.equals(SUCCESS))
 		{
@@ -37,45 +65,73 @@ public class Blast
 			
 			while (status.equals(WAITING))
 			{
-				System.out.println("WAITING FOR: "+ id);
+				System.out.println("BLAST WAITING FOR: "+ id);
 				
-				sendInterGET();
+				try 
+				{
+					sendInterGET();
+				} 
+				catch (IOException e) 
+				{
+					e.printStackTrace();
+				}
 				
 				if (status.equals(WAITING))
 				{
-					Thread.sleep(30000);
+					try 
+					{
+						Thread.sleep(30000);
+					} 
+					catch (InterruptedException e) 
+					{
+						e.printStackTrace();
+					}
 				}	
 			}
 			
-			System.out.println("RETRIEVING: "+id);
+			System.out.println("BLAST RETRIEVING: "+id);
 			
-			sendGET();
+			try 
+			{
+				sendGET();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 			
 			if (status.equals(SUCCESS))
 			{
-				System.out.println("PSI-BLAST Done");
+				System.out.println("PSI-BLAST DONE");
 			}
 			else
 			{
-				System.out.println("PSI-BLAST Failed");
+				System.out.println("PSI-BLAST FAILED");
 			}
 		}
 		else
 		{
 			System.exit(0); 
 		}		
-	}
+	}	
 	
+	/**
+     *  envia un POST request al servidor blast
+     *  recibe y analiza validez de la respuesta
+     *
+     *  @arg String expect => e-value para el blast
+     *  @arg String params => secuencia de aminoacidos a enviar
+     */
 	private static void sendPOST(String expect, String params) throws IOException 
 	{
 		//define the url
 		
 		String postUrl = (URL+PARAMETERS_POST+params).replace("***", expect);
-		System.out.println("Post URL: "+postUrl);
 		
 		// open conection
 		
 		URL obj = new URL(postUrl);
+		System.out.println(postUrl);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -139,6 +195,10 @@ public class Blast
 		}
 	}
 	
+	/**
+     *  envia un GET request al servidor blast
+     *  recibe y procesa el estado de compeltitud de el previo POST       
+     */
 	private static void sendInterGET() throws IOException 
 	{
 		// define url
@@ -183,7 +243,7 @@ public class Blast
 			{
 				//FAILURE
 				
-				status = FAILURE; 
+				status = WAITING; 
 			}
 			
 		} 
@@ -195,6 +255,11 @@ public class Blast
 		}
 	}
 	
+	/**
+     *  envia un GET request al servidor blast
+     *  recibe los resultados del proceso blast
+     *  escribe los resultados en el aarchivo Blast.csv
+     */
 	private static void sendGET() throws IOException 
 	{
 		//define url

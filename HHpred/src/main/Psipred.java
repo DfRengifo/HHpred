@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class Psipred 
+public class Psipred implements Runnable
 {
 	//declarar urls
 	
@@ -20,6 +20,7 @@ public class Psipred
 	
 	//declarar estados
 	
+	private static final String STARTING = "starting";
 	private static final String WAITING = "waiting";
 	private static final String FAILURE = "failure";
 	private static final String SUCCESS = "success";
@@ -30,11 +31,29 @@ public class Psipred
     private static String id;
     private static String name; 
     private static String status;
+    
+    /**
+     *  constructor default
+     */
+    public Psipred() 
+	{
+		status = STARTING;
+	}
 
-	public static void main(String[] args) throws IOException, InterruptedException 
+    /**
+     *  run: ejecuta el proceso psipred     
+     */
+	public void run()
 	{	
-		System.out.println("Starting PSIPRED");
-		sendPOST();	
+		System.out.println("STARTING PSIPRED");
+		try 
+		{
+			sendPOST();
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}	
 		
 		if (status.equals(SUCCESS))
 		{
@@ -42,25 +61,47 @@ public class Psipred
 			
 			while (status.equals(WAITING))
 			{
-				System.out.println("WAITING FOR: "+ id);
-				sendGET();
+				System.out.println("PSIPRED WAITING FOR: "+ id);
+				try 
+				{
+					sendGET();
+				} 
+				catch (IOException e1) 
+				{
+					e1.printStackTrace();
+				}
+				
 				if (status.equals(WAITING))
 				{
-					Thread.sleep(30000);
+					try 
+					{
+						Thread.sleep(30000);
+					} 
+					catch (InterruptedException e) 
+					{
+						e.printStackTrace();
+					}
 				}
 			}
 			
-			System.out.println("Retrieving: "+name);
+			System.out.println("PSIPRED RETRIEVING: "+name);
 			
-			sendDefinitiveGET();
+			try 
+			{
+				sendDefinitiveGET();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 			
 			if (status.equals(SUCCESS))
 			{
-				System.out.println("PSIPRED Done");
+				System.out.println("PSIPRED DONE");
 			}
 			else
 			{
-				System.out.println("PSIPRED Failed");
+				System.out.println("PSIPRED FAILED");
 			}		
 		}
 		else
@@ -68,7 +109,11 @@ public class Psipred
 			System.exit(0);	
 		}		
 	}
-	
+
+	/**
+     *  envia un POST request al servidor psipred
+     *  recibe y analiza validez de la respuesta
+     */
 	private static void sendPOST() throws IOException 
 	{		
 		//declaracion id	
@@ -202,6 +247,11 @@ public class Psipred
 		outputStream.close();
 	}
 		
+	/**
+     *  envia un GET request al servidor psipred
+     *  recibe y procesa el estado de compeltitud de el previo POST
+     *  al estar completado, actualiza el id con el nuevo valor        
+     */
 	private static void sendGET() throws IOException 
 	{
 		//definicion de url
@@ -262,6 +312,11 @@ public class Psipred
 		}
 	}
 	
+	/**
+     *  envia un GET request al servidor psipred
+     *  recibe los resultados del proceso psipred
+     *  escribe los resultados en el archivo Secondary.txt
+     */
 	private static void sendDefinitiveGET() throws IOException 
 	{		
 		// declaracion url
@@ -271,7 +326,6 @@ public class Psipred
 		//parametrizacion de conexion
 		
 		URL obj = new URL(getUrl);
-		System.out.println(getUrl);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();		
 		con.setRequestMethod("GET");
 		con.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -279,7 +333,6 @@ public class Psipred
 		//response
 		
 		int responseCode = con.getResponseCode();
-		System.out.println("GET Response Code :: " + responseCode);
 		
 		if (responseCode == HttpURLConnection.HTTP_OK) 
 		{ 
