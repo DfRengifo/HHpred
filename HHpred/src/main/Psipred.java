@@ -38,10 +38,10 @@ public class Psipred implements Runnable
     /**
      *  constructor default
      */
-    public Psipred(String sequence) 
+    public Psipred(String seq) 
 	{
 		status = STARTING;
-		this.sequence = sequence;
+		sequence = seq;
 	}
 
     /**

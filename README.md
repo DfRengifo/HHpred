@@ -14,3 +14,5 @@ Daniel Rengifo 201533922
     - Threads
     * Inconisstencias en tiempos de ejecucion de Blast
         * incluir ".be-md" en la URL, resuelve el problema, sin embargo no es recomendable, en aras de la comunidad, usar el recurso repetidamente.
+
+- Construccion de HMM Vacio

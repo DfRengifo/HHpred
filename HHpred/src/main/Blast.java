@@ -102,11 +102,11 @@ public class Blast implements Runnable
 			
 			if (status.equals(SUCCESS))
 			{
-				System.out.println("PSI-BLAST DONE");
+				System.out.println("BLAST DONE");
 			}
 			else
 			{
-				System.out.println("PSI-BLAST FAILED");
+				System.out.println("BLAST FAILED");
 			}
 		}
 		else
@@ -131,7 +131,6 @@ public class Blast implements Runnable
 		// open conection
 		
 		URL obj = new URL(postUrl);
-		System.out.println(postUrl);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("POST");
 		con.setRequestProperty("User-Agent", "Mozilla/5.0");
